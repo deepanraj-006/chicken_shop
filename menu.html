@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - Chicken Shop</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #ff6b6b, #ffa500); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { background: white; padding: 20px; border-radius: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        header h1 { font-size: 2em; color: #ff6b6b; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .logout-btn { padding: 10px 20px; background: #ff4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .logout-btn:hover { background: #cc0000; }
+        .menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .menu-item { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: transform 0.3s; }
+        .menu-item:hover { transform: translateY(-5px); }
+        .menu-item-icon { font-size: 3em; text-align: center; margin-bottom: 10px; }
+        .menu-item h3 { color: #ff6b6b; margin-bottom: 10px; font-size: 1.5em; }
+        .menu-item p { color: #666; margin-bottom: 15px; font-size: 0.9em; }
+        .price { font-size: 1.3em; font-weight: bold; color: #333; margin-bottom: 15px; }
+        .quantity-control { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .quantity-control button { width: 35px; height: 35px; border: none; background: #ff6b6b; color: white; font-size: 1.2em; border-radius: 8px; cursor: pointer; }
+        .quantity-control input { width: 50px; text-align: center; border: 2px solid #ddd; border-radius: 8px; padding: 5px; }
+        .add-btn { width: 100%; padding: 12px; background: #ffa500; color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; }
+        .add-btn:hover { background: #ff8c00; }
+        .cart-section { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .cart-section h2 { color: #ff6b6b; margin-bottom: 20px; font-size: 2em; }
+        .cart-items { margin-bottom: 20px; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; }
+        .cart-item-info { flex: 1; }
+        .cart-item-name { font-weight: bold; color: #333; margin-bottom: 5px; }
+        .cart-item-details { color: #666; font-size: 0.9em; }
+        .cart-item-price { font-weight: bold; color: #ff6b6b; font-size: 1.2em; }
+        .remove-btn { background: #ff4444; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-left: 15px; }
+        .cart-total { border-top: 2px solid #ddd; padding-top: 20px; text-align: right; }
+        .cart-total h3 { font-size: 1.8em; color: #333; }
+        .total-amount { color: #ff6b6b; font-size: 2em; }
+        .checkout-btn { width: 100%; padding: 15px; background: #4CAF50; color: white; border: none; border-radius: 10px; font-size: 1.3em; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .checkout-btn:hover { background: #45a049; }
+        .checkout-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .empty-cart { text-align: center; padding: 40px; color: #999; }
+        .empty-cart-icon { font-size: 4em; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍗 Clucky's Chicken Shop</h1>
+            <div class="user-info">
+                <span id="welcomeUser"></span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </header>
+        <div class="menu" id="menu"></div>
+        <div class="cart-section">
+            <h2>🛒 Your Order</h2>
+            <div class="cart-items" id="cartItems"></div>
+            <div class="cart-total">
+                <h3>Total: <span class="total-amount" id="totalAmount">₹0</span></h3>
+                <button class="checkout-btn" id="checkoutBtn" disabled onclick="checkout()">Place Order</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        if (!localStorage.getItem('loggedIn')) {
+            window.location.href = 'index.html';
+        }
+        document.getElementById('welcomeUser').textContent = 'Hello, ' + localStorage.getItem('username');
+        const menuItems = [
+            { id: 1, name: "Fried Chicken", icon: "🍗", description: "Crispy golden fried chicken pieces", price: 150 },
+            { id: 2, name: "Chicken Burger", icon: "🍔", description: "Juicy chicken patty with fresh veggies", price: 120 },
+            { id: 3, name: "Chicken Wings", icon: "🍖", description: "Spicy chicken wings with special sauce", price: 180 },
+            { id: 4, name: "Chicken Pizza", icon: "🍕", description: "Loaded with chicken and cheese", price: 250 },
+            { id: 5, name: "Chicken Wrap", icon: "🌯", description: "Grilled chicken wrapped with veggies", price: 100 },
+            { id: 6, name: "Chicken Nuggets", icon: "🍿", description: "Bite-sized crispy chicken nuggets", price: 130 }
+        ];
+        let cart = [];
+        function displayMenu() {
+            document.getElementById('menu').innerHTML = menuItems.map(item => `
+                <div class="menu-item">
+                    <div class="menu-item-icon">${item.icon}</div>
+                    <h3>${item.name}</h3>
+                    <p>${item.description}</p>
+                    <div class="price">₹${item.price}</div>
+                    <div class="quantity-control">
+                        <button onclick="decreaseQty(${item.id})">-</button>
+                        <input type="number" id="qty-${item.id}" value="1" min="1" readonly>
+                        <button onclick="increaseQty(${item.id})">+</button>
+                    </div>
+                    <button class="add-btn" onclick="addToCart(${item.id})">Add to Cart</button>
+                </div>
+            `).join('');
+        }
+        function increaseQty(id) {
+            document.getElementById(`qty-${id}`).value = parseInt(document.getElementById(`qty-${id}`).value) + 1;
+        }
+        function decreaseQty(id) {
+            const input = document.getElementById(`qty-${id}`);
+            if (parseInt(input.value) > 1) input.value = parseInt(input.value) - 1;
+        }
+        function addToCart(id) {
+            const item = menuItems.find(item => item.id === id);
+            const qty = parseInt(document.getElementById(`qty-${id}`).value);
+            const existingItem = cart.find(cartItem => cartItem.id === id);
+            if (existingItem) {
+                existingItem.quantity += qty;
+            } else {
+                cart.push({ ...item, quantity: qty });
+            }
+            document.getElementById(`qty-${id}`).value = 1;
+            updateCart();
+        }
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCart();
+        }
+        function updateCart() {
+            const cartDiv = document.getElementById('cartItems');
+            const totalDiv = document.getElementById('totalAmount');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            if (cart.length === 0) {
+                cartDiv.innerHTML = `<div class="empty-cart"><div class="empty-cart-icon">🛒</div><p>Your cart is empty</p></div>`;
+                totalDiv.textContent = '₹0';
+                checkoutBtn.disabled = true;
+            } else {
+                cartDiv.innerHTML = cart.map(item => `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.icon} ${item.name}</div>
+                            <div class="cart-item-details">Quantity: ${item.quantity} × ₹${item.price}</div>
+                        </div>
+                        <div class="cart-item-price">₹${item.quantity * item.price}</div>
+                        <button class="remove-btn" onclick="removeFromCart(${item.id})">Remove</button>
+                    </div>
+                `).join('');
+                const total = cart.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+                totalDiv.textContent = `₹${total}`;
+                checkoutBtn.disabled = false;
+            }
+        }
+        function checkout() {
+            const total = cart.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            localStorage.setItem('orderTotal', total);
+            localStorage.setItem('orderItems', JSON.stringify(cart));
+            window.location.href = 'success.html';
+        }
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+        displayMenu();
+        updateCart();
+    </script>
+</body>
+</html>

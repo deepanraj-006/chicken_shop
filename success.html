@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Success</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #4CAF50, #8BC34A); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .success-container { background: white; padding: 50px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 600px; width: 100%; text-align: center; }
+        .success-icon { font-size: 5em; margin-bottom: 20px; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        h1 { color: #4CAF50; font-size: 2.5em; margin-bottom: 15px; }
+        .order-details { background: #f9f9f9; padding: 30px; border-radius: 15px; margin: 30px 0; text-align: left; }
+        .order-details h2 { color: #333; margin-bottom: 20px; font-size: 1.5em; }
+        .order-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd; }
+        .order-item:last-child { border-bottom: none; }
+        .item-name { font-weight: bold; color: #333; }
+        .item-qty { color: #666; }
+        .item-price { color: #4CAF50; font-weight: bold; }
+        .total-section { margin-top: 20px; padding-top: 20px; border-top: 2px solid #4CAF50; }
+        .total-section h3 { font-size: 2em; color: #333; }
+        .total-amount { color: #4CAF50; font-size: 2.5em; font-weight: bold; }
+        .btn-group { display: flex; gap: 15px; margin-top: 30px; }
+        .btn { flex: 1; padding: 15px; border: none; border-radius: 10px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+        .btn-primary { background: #4CAF50; color: white; }
+        .btn-primary:hover { background: #45a049; }
+        .btn-secondary { background: #ff6b6b; color: white; }
+        .btn-secondary:hover { background: #ff5252; }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">✅</div>
+        <h1>Order Placed Successfully!</h1>
+        <p style="color: #666; font-size: 1.1em;">Thank you for your order. Your delicious food is on the way!</p>
+        <div class="order-details">
+            <h2>📋 Order Summary</h2>
+            <div id="orderItems"></div>
+            <div class="total-section">
+                <h3>Total Amount</h3>
+                <div class="total-amount" id="totalAmount">₹0</div>
+            </div>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="window.location.href='menu.html'">Order More</button>
+            <button class="btn btn-secondary" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    <script>
+        if (!localStorage.getItem('loggedIn') || !localStorage.getItem('orderTotal')) {
+            window.location.href = 'index.html';
+        }
+        const total = localStorage.getItem('orderTotal');
+        const items = JSON.parse(localStorage.getItem('orderItems'));
+        document.getElementById('totalAmount').textContent = '₹' + total;
+        document.getElementById('orderItems').innerHTML = items.map(item => `
+            <div class="order-item">
+                <div>
+                    <div class="item-name">${item.icon} ${item.name}</div>
+                    <div class="item-qty">Quantity: ${item.quantity}</div>
+                </div>
+                <div class="item-price">₹${item.quantity * item.price}</div>
+            </div>
+        `).join('');
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
